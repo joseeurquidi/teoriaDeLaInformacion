@@ -14,7 +14,6 @@ def candidates(array, ll)
 
     return salida
 
-
     # return (array * ll).permutation(ll).to_a.map{|x| 
     #     x.delete_if{|y| 
     #         y.nil? 
