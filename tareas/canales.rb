@@ -1,19 +1,29 @@
 require 'awesome_print'
 require 'terminal-table'
 
-def candidates(array, ll)
+def candidates(array, ll, old_data)
 
     salida = []
-    (array * ll).permutation(ll).to_a.each do |elem|
+    evalsData = array.permutation(ll).to_a
+    evalsData += old_data
+    array.each do |dat|
+        old_data.each do |odat|
+            evalsData += [(odat + [dat])]
+        end
+    end
+
+    # p "#{ll} - #{evalsData.count}"
+
+    evalsData.each do |elem|
         elem.delete_if{|y| y.nil? }
 
-        if elem.join("").length == ll && !salida.include?( elem )
+        if elem.join("").length == ll
             salida.push( elem )
         end 
     end
 
-    return salida
-
+    salida.uniq!
+    return salida, evalsData
     # return (array * ll).permutation(ll).to_a.map{|x| 
     #     x.delete_if{|y| 
     #         y.nil? 
@@ -42,18 +52,22 @@ while true
     end
 end
 
+# inputA = "+,-,/,*,&".split(",")
+# inputB = "+,--,//,***,&&&&".split(",")
 
+start = Time.now
 totalInput = inputA + inputB
 iteration = totalInput.map{|x| x.length }.max
-
-inputA += ( [ nil ] * inputA.length )
-inputB += ( [ nil ] * inputB.length )
+iteration = 6
+old_dataA = []
+old_dataB = []
 
 rows = []
+rowsTotalsOnly = []
 
 iteration.times do |i|
-    candidatesA = candidates(inputA, i + 1 )
-    candidatesB = candidates(inputB, i + 1 )
+    candidatesA, old_dataA = candidates(inputA, i + 1, old_dataA )
+    candidatesB, old_dataB = candidates(inputB, i + 1, old_dataB )
     new_row = []
     new_row.push( i + 1)
     new_row.push( candidatesA.map{|x| 
@@ -66,6 +80,12 @@ iteration.times do |i|
                     }.join("\n") )
     new_row.push( candidatesB.count )
     rows.push( new_row )
+    
+    new_row = []
+    new_row.push( i + 1)
+    new_row.push( candidatesA.count )
+    new_row.push( candidatesB.count )
+    rowsTotalsOnly.push( new_row )
 end
 
 table = Terminal::Table.new( :headings => ['l', 'A', 'nA', "B", "nB"], :rows => rows, :style => {:all_separators => true} )
@@ -73,3 +93,14 @@ table.align_column(0, :right)
 table.align_column(2, :center)
 table.align_column(4, :center)
 puts table
+
+puts ""
+puts ""
+
+tablePre = Terminal::Table.new( :headings => ['l', 'nA', "nB"], :rows => rowsTotalsOnly, :style => {:all_separators => true} )
+tablePre.align_column(0, :right)
+tablePre.align_column(1, :center)
+tablePre.align_column(3, :center)
+puts tablePre
+
+p "Time #{ Time.now - start }"
