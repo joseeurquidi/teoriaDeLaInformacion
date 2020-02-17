@@ -100,7 +100,7 @@ puts ""
 tablePre = Terminal::Table.new( :headings => ['l', 'nA', "nB"], :rows => rowsTotalsOnly, :style => {:all_separators => true} )
 tablePre.align_column(0, :right)
 tablePre.align_column(1, :center)
-tablePre.align_column(3, :center)
+tablePre.align_column(2, :center)
 puts tablePre
 
 p "Time #{ Time.now - start }"
