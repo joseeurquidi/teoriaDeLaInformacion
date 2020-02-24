@@ -1,3 +1,7 @@
+#Cuantos eventos estan participando
+#cambiar mensajes de entrada
+#que no acepte caracteres, ni numeros, ni negativos, solo fracciones y decimales
+
 require 'awesome_print'
 
 

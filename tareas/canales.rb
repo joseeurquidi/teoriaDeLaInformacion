@@ -1,3 +1,5 @@
+# no puede haber caracteres repetidos
+
 require 'awesome_print'
 require 'terminal-table'
 

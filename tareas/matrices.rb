@@ -1,3 +1,8 @@
+#que no acepte letras ni caracteres que no sean numericos
+# no puede tener enteros, decimales o cero
+# todas las filas de la matriz tienen que ser 1
+# cambiar la entrada de texto A
+
 require 'awesome_print'
 require 'bigdecimal'
 
