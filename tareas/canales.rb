@@ -12,10 +12,10 @@ def candidates(array, ll, old_data)
         end
     end
 
-    # p "#{ll} - #{evalsData.count}"
+
 
     evalsData.each do |elem|
-        elem.delete_if{|y| y.nil? }
+        #elem.delete_if{|y| y.nil? }
 
         if elem.join("").length == ll
             salida.push( elem )
@@ -24,13 +24,7 @@ def candidates(array, ll, old_data)
 
     salida.uniq!
     return salida, evalsData
-    # return (array * ll).permutation(ll).to_a.map{|x| 
-    #     x.delete_if{|y| 
-    #         y.nil? 
-    #     } 
-    # }.select{|x| 
-    #     x.join("").length == ll 
-    # }.uniq
+  
 end
 
 while true
@@ -52,13 +46,12 @@ while true
     end
 end
 
-# inputA = "+,-,/,*,&".split(",")
-# inputB = "+,--,//,***,&&&&".split(",")
+
 
 start = Time.now
 totalInput = inputA + inputB
 iteration = totalInput.map{|x| x.length }.max
-iteration = 6
+iteration = 8
 old_dataA = []
 old_dataB = []
 
@@ -102,5 +95,7 @@ tablePre.align_column(0, :right)
 tablePre.align_column(1, :center)
 tablePre.align_column(2, :center)
 puts tablePre
+
+puts ""
 
 p "Time #{ Time.now - start }"

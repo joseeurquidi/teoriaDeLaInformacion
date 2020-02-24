@@ -1,0 +1,133 @@
+<html>
+    <head>
+        <title> Arboles de subfijo </title>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <style>
+            input[type="text"] {
+                width: 100%; 
+                box-sizing: border-box;
+                -webkit-box-sizing:border-box;
+                -moz-box-sizing: border-box;
+            }
+
+            .google-visualization-orgchart-linenode {
+                border: 0;
+            }
+            
+            table.google-visualization-orgchart-table {
+                border-collapse: separate;
+            }
+        </style>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h4> Alfabreto de entrada</h4>
+                </div>
+            </div>
+
+            <div class="row">
+              <div class="col-10">
+                <input type="text" id="alfabeto" placeholder="Entre el alfabeto">
+              </div>
+              <div class="col-2">
+                <button id="buton" onclick="runProgram()" disabled>Corre</button>
+            </div>
+
+            <br>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div id="grafica"></div>
+                </div>
+            </div>
+
+        </div>
+    </body>
+</html>
+
+<script>
+
+    google.charts.load('current', {packages:["orgchart"]});
+    google.charts.setOnLoadCallback( enableChart );
+
+    //Habilitar el boton cuando tienes internet
+    function enableChart(){
+        var button = document.getElementById("buton")
+        button.disabled = false
+    }
+    //abaactbbactb
+    //abct
+    function runProgram(){
+        var alfabeto = document.getElementById("alfabeto").value
+        var alfabetoPartido = alfabeto.split("")
+        var primeraLetra = alfabetoPartido[0]
+        
+        //Creacion de los datos de posicion de el alfabeto de entrada
+        var arbol = {}
+        for (var i = 0; i < alfabetoPartido.length - 1; i++) {
+            var element = alfabetoPartido[i];
+            var elementPos = alfabetoPartido[i + 1];
+            var namesEval = element + elementPos
+            var strEval = [i.toString(), ( i + 2 == alfabetoPartido.length ? "∞" :  i + 1 ).toString()]
+
+            if( elementPos != undefined ){
+
+                if( arbol[ namesEval ] == undefined ){
+                    arbol[ namesEval ] = { primeraLetra: element, segundaLetra: elementPos, values: [] }
+                }
+
+                arbol[ namesEval ].values.push( strEval )
+            }
+        }
+
+        console.log( JSON.parse( JSON.stringify( arbol ) ) )
+
+        //Creacion de el arbol para impresion
+        var grafica = [[primeraLetra, ""]]
+        var letrasABuscar = {}
+        letrasABuscar[primeraLetra] = primeraLetra
+        while( !_.isEmpty( arbol )){
+
+            var valuesToDelete = []
+            var nuevasLetrasABuscar = {}
+            for( var data in arbol ){
+                var thisData = arbol[ data ]
+                if( letrasABuscar[ thisData.primeraLetra ] != undefined ){
+                    var indice = thisData.values.map(function(x){ return x.join(",") }).join("<br>") + "<br><br>" + thisData.segundaLetra
+                    grafica.push( [indice, letrasABuscar[ thisData.primeraLetra ]] )
+                    valuesToDelete.push( data )
+                    nuevasLetrasABuscar[ thisData.segundaLetra ] = indice
+                }
+            }
+
+            for (let i = 0; i < valuesToDelete.length; i++) {
+                delete arbol[ valuesToDelete[i] ]
+            }
+
+            letrasABuscar = JSON.parse( JSON.stringify( nuevasLetrasABuscar ) )
+        }
+
+        //Impresion de la grafica
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Contenido');
+        data.addColumn('string', 'Procedente');
+        data.addRows( grafica );
+
+        // Create the chart.
+        var chart = new google.visualization.OrgChart(document.getElementById('grafica'));
+        // Draw the chart, setting the allowHtml option to true for the tooltips.
+        chart.draw(data, {'allowHtml':true});
+
+        console.log( grafica )
+    }
+</script>
