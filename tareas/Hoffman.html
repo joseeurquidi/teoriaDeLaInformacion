@@ -1,0 +1,356 @@
+<html>
+  <head>
+    <title> Hoffman </title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <style>
+      input[type="text"] {
+        width: 100%; 
+        box-sizing: border-box;
+        -webkit-box-sizing:border-box;
+        -moz-box-sizing: border-box;
+      }
+
+      .google-visualization-orgchart-linenode {
+        border: 0;
+      }
+      
+      table.google-visualization-orgchart-table {
+        border-collapse: separate;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h4> Hoffman </h4>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <input type="text" id="texto" placeholder="Entre el texto">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <input type="radio" id="letras" name="tipo" value="letras">
+          <label for="letras">letras</label><br>
+          <input type="radio" id="palabras" name="tipo" value="palabras">
+          <label for="palabras">palabras</label><br>
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="col-12">
+          <button id="buton" onclick="runProgram()" disabled>Corre</button>
+        </div>
+      </div>
+
+      <br>
+      
+      <div class="row">
+        <div class="col-12">
+          <div id="grafica"></div>
+        </div>
+      </div>
+
+      <div id="salidas" class="d-none">
+        <div class="row">
+          <div class="col-12">
+            <h5> Contadores </h5>
+            <div id="contadores"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <h5> Valores binarios </h5>
+            <div id="valBinarios"></div>
+          </div>
+        </div>
+        
+
+        <div class="row">
+          <div class="col-12">
+            <h5> Bytes originales </h5>
+            <div id="bytesOriginal"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <h5> Bytes hoffman </h5>
+            <div id="bytesHoffman"></div>
+          </div>
+        </div>
+
+
+      </div>
+
+    </div>
+  </body>
+</html>
+
+<script>
+  
+  document.getElementById('letras').checked = true
+  google.charts.load('current', {packages:["orgchart"]});
+  google.charts.setOnLoadCallback( enableChart );
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //Habilitar el boton cuando tienes internet
+  function enableChart(){
+    var button = document.getElementById("buton")
+    button.disabled = false
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function pack(bytes) {
+      var chars = [];
+      for(var i = 0, n = bytes.length; i < n;) {
+          chars.push(((bytes[i++] & 0xff) << 8) | (bytes[i++] & 0xff));
+      }
+      return String.fromCharCode.apply(null, chars);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function unpack(str) {
+      var bytes = [];
+      for(var i = 0, n = str.length; i < n; i++) {
+          var char = str.charCodeAt(i);
+          bytes.push(char >>> 8, char & 0xFF);
+      }
+      return bytes;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function sortProperties(obj){
+    // convert object into array
+    var sortable=[];
+    for(var key in obj)
+      if(obj.hasOwnProperty(key))
+        sortable.push([key, obj[key]]); // each item is an array in format [key, value]
+    
+    // sort items by value
+    sortable.sort(function(a, b)
+    {
+      return a[1]-b[1]; // compare numbers
+    });
+    return sortable; // array in format [ [ key1, val1 ], [ key2, val2 ], ... ]
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function encontrarLetra(nodo, indice, valores, nameNodoPadre, grafica){
+
+    var keyNodo = Object.keys(nodo)[0]
+    var valueNodo = Object.values(nodo)[0]
+    var spaceValidator = valueNodo.valor
+    if ( valueNodo.isLetra && spaceValidator == " " ) {
+      spaceValidator = "[space]"
+    }
+
+    var nameNodo = keyNodo + ( "<br>" + spaceValidator )
+    grafica.push([nameNodo, nameNodoPadre])
+    //Ultimo nodo
+    if (valueNodo.izquierda == null && valueNodo.derecha == null){
+      valores.push([valueNodo.valor, indice ])
+      return [valores, grafica]
+    }else{
+      if (valueNodo.izquierda != null){
+        var returnIzqData = encontrarLetra(valueNodo.izquierda, indice.concat(0), valores, nameNodo, grafica)
+        valores = returnIzqData[0]
+        grafica = returnIzqData[1]
+      }
+  
+      if (valueNodo.derecha != null){
+        var returnDerData = encontrarLetra(valueNodo.derecha, indice.concat(1), valores, nameNodo, grafica)
+        valores = returnDerData[0]
+        grafica = returnDerData[1]
+      }
+    }
+
+    return [valores, grafica]
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function runProgram(){
+    var texto = document.getElementById("texto").value
+    var palabras = document.getElementById('palabras').checked == true
+    var letras = document.getElementById('letras').checked == true
+
+    var textoOrg = texto
+    var originalBytes = []
+    for (var i = 0; i < texto.length; i++){  
+      originalBytes.push(texto.charCodeAt(i).toString(2));
+    }
+    
+
+    var selector = ""
+    if ( palabras ) {
+      selector = " "
+    }
+
+    texto = texto.split( selector )
+
+    var diccionario = {}
+    for( var i = 0; i < texto.length; i++){
+      if ( diccionario[ texto[i] ] == undefined ) {
+        diccionario[ texto[i] ] = 0
+      }
+
+      diccionario[ texto[i] ] += 1
+    }
+
+    diccionario = sortProperties( diccionario )
+
+    var arrayArbol = {}
+    for( var i = 0; i < diccionario.length; i++){
+      var key = diccionario[i][0]
+      var value = diccionario[i][1]
+
+      if( arrayArbol[ value ] == undefined ){
+        arrayArbol[ value ] = []
+      }
+
+      arrayArbol[ value ].push( { 
+          isLetra: true, 
+          valor: key, 
+          derecha: null, 
+          izquierda: null 
+      }  )
+    }
+
+    console.log( "Prearbol" )
+    console.log( JSON.parse( JSON.stringify( arrayArbol ) ) )
+
+    var auxValueNodo = ""
+    while (true){
+      var valueIzq = parseInt( Object.keys(arrayArbol)[0] )
+      var izquierda = arrayArbol[ valueIzq ].pop()
+
+      var keysToDelete = []
+      for( var key in arrayArbol ){
+        if ( arrayArbol[ key ].length == 0 ) {
+          keysToDelete.push( key )
+        }
+      }
+      for( var i = 0; i < keysToDelete.length; i++){
+        delete arrayArbol[ keysToDelete[i] ]
+      }
+
+      var valueDer = parseInt( Object.keys(arrayArbol)[0])
+
+      if ( arrayArbol[ valueDer ] == undefined ){
+        arrayArbol[ valueIzq ] = izquierda
+        break
+      }
+
+      var derecha = arrayArbol[ valueDer ].pop()
+
+      var keysToDelete = []
+      for( var key in arrayArbol ){
+        if ( arrayArbol[ key ].length == 0 ) {
+          keysToDelete.push( key )
+        }
+      }
+      for( var i = 0; i < keysToDelete.length; i++){
+        delete arrayArbol[ keysToDelete[i] ]
+      }
+
+      var newValue = valueIzq + valueDer
+
+      var newValueDer = {}
+      newValueDer[ valueDer ] = derecha
+      var newValueIzq = {}
+      newValueIzq[ valueIzq ] = izquierda
+
+      var newElement = {
+        isLetra: false, 
+        valor: auxValueNodo, 
+        derecha: newValueDer,
+        izquierda: newValueIzq
+      }
+
+      auxValueNodo += " "
+
+      if(arrayArbol[ newValue ] == undefined){
+        arrayArbol[ newValue ] = []
+      }
+
+      arrayArbol[ newValue ].push( newElement )
+    }
+
+
+    //Arbol completado
+    var valoresArbol = encontrarLetra( arrayArbol, [], [], "", []) //.map(function(x){ return [ x[0], x[1].join("")] })
+    var valores = valoresArbol[0]
+    var grafica = valoresArbol[1]
+    var traductor = {}
+    var traductorHTML = ""
+    for( var i = 0; i < valores.length; i++){
+      traductor[ valores[i][0] ] = valores[i][1].join("")
+      traductorHTML += valores[i][0] + " - " + valores[i][1] + "<br>"
+    }
+
+    var bytesHoffman = []
+    for( var i = 0; i < texto.length; i++){
+      bytesHoffman.push( traductor[ texto[i] ] )
+    }
+    
+    document.getElementById("salidas").classList.remove("d-none")
+
+    document.getElementById("contadores").innerHTML = diccionario.map(function(x){ return x.join(" - ") }).join("<br>")
+    document.getElementById("valBinarios").innerHTML = traductorHTML
+    document.getElementById("bytesOriginal").innerHTML = originalBytes.join(" ")
+    document.getElementById("bytesHoffman").innerHTML = bytesHoffman.join(" ")
+
+    console.log( "Diccionario" )
+    console.log( diccionario )
+
+    console.log( "Arbol" )
+    console.log( arrayArbol )
+
+    console.log( "Valores binarios" )
+    console.log( valores )
+
+    console.log( "Grafica" )
+    console.log( grafica )
+
+    console.log( "Texto" )
+    console.log( textoOrg )
+
+    console.log( "Bytes originales" )
+    console.log( originalBytes )
+
+    console.log( "Bytes Hoffman" )
+    console.log( bytesHoffman.join("") )
+
+    //Impresion de la grafica
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Contenido');
+    data.addColumn('string', 'Procedente');
+    data.addRows( grafica );
+
+    // Create the chart.
+    var chart = new google.visualization.OrgChart(document.getElementById('grafica'));
+    // Draw the chart, setting the allowHtml option to true for the tooltips.
+    chart.draw(data, {'allowHtml':true});
+  }
+</script>
