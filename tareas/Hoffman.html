@@ -13,6 +13,13 @@
         -moz-box-sizing: border-box;
       }
 
+      input[type="file"] {
+        width: 100%; 
+        box-sizing: border-box;
+        -webkit-box-sizing:border-box;
+        -moz-box-sizing: border-box;
+      }
+
       .google-visualization-orgchart-linenode {
         border: 0;
       }
@@ -37,12 +44,27 @@
 
       <div class="row">
         <div class="col-12">
-          <input type="text" id="texto" placeholder="Entre el texto">
+          <h5> Entrada de datos </h5>
+
+          <input type="radio" id="texto" name="entrada" value="texto">
+          <label for="texto">texto</label><br>
+          <input type="text" id="textoE" placeholder="Entre el texto">
+
+          <input type="radio" id="archivo" name="entrada" value="archivo">
+          <label for="archivo">archivo</label><br>
+          <input type="file" id="archivoE" placeholder="Ingrese el archivo">
+
+          <br>
+
+          <h6 id="erroresArchivo" > El archivo tiene que ser un .txt </h6>
         </div>
       </div>
 
+      <hr>
+
       <div class="row">
         <div class="col-12">
+          <h5> Base de separacion </h5>
           <input type="radio" id="letras" name="tipo" value="letras">
           <label for="letras">letras</label><br>
           <input type="radio" id="palabras" name="tipo" value="palabras">
@@ -68,14 +90,12 @@
       <div id="salidas" class="d-none">
         <div class="row">
           <div class="col-12">
-            <h5> Contadores </h5>
             <div id="contadores"></div>
           </div>
         </div>
 
         <div class="row">
           <div class="col-12">
-            <h5> Valores binarios </h5>
             <div id="valBinarios"></div>
           </div>
         </div>
@@ -95,6 +115,19 @@
           </div>
         </div>
 
+        <br>
+        <hr>
+        <br>
+        <br>
+
+        <div class="row">
+          <div class="col-12">
+            <button onclick="downloadFiles()">Descargar comprimidos</button>
+          </div>
+        </div>
+
+        <br><br>
+
 
       </div>
 
@@ -104,9 +137,13 @@
 
 <script>
   
+  document.getElementById('texto').checked = true
   document.getElementById('letras').checked = true
+  erroresArchivo.classList.add("d-none")
   google.charts.load('current', {packages:["orgchart"]});
   google.charts.setOnLoadCallback( enableChart );
+  var salidaHolffman = ""
+  var salidaDatos = ""
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -165,6 +202,14 @@
       spaceValidator = "[space]"
     }
 
+    if ( valueNodo.isLetra && spaceValidator == "\n" ) {
+      spaceValidator = "[newLine]"
+    }
+
+    if ( valueNodo.isLetra && spaceValidator == "\r" ) {
+      spaceValidator = "[endLine]"
+    }
+
     var nameNodo = keyNodo + ( "<br>" + spaceValidator )
     grafica.push([nameNodo, nameNodoPadre])
     //Ultimo nodo
@@ -189,9 +234,39 @@
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   function runProgram(){
-    var texto = document.getElementById("texto").value
+    var radioTexto = document.getElementById("texto").checked == true
+    var archivo = document.getElementById("archivo").checked == true
+
+    var erroresArchivo = document.getElementById("erroresArchivo")
+    erroresArchivo.classList.add("d-none")
+
+    if( radioTexto ){
+        resolveHoffman( document.getElementById('textoE').value )
+    }else{
+        var archivo = document.getElementById('archivoE').files[0]
+        var extension = archivo.name.split(".").pop()
+        if( extension == "txt" ){
+          erroresArchivo.classList.add("d-none")
+
+          var reader = new FileReader();
+          reader.onload = function(){
+              resolveHoffman( reader.result )
+          };
+          reader.readAsText(archivo);
+
+        }else{ 
+          erroresArchivo.classList.remove("d-none")
+          resolveHoffman("")
+        }
+        
+    }
+
+  }
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function resolveHoffman( texto ){
+ 
     var palabras = document.getElementById('palabras').checked == true
     var letras = document.getElementById('letras').checked == true
 
@@ -201,21 +276,43 @@
       originalBytes.push(texto.charCodeAt(i).toString(2));
     }
     
+    if ( letras ) {
+      texto = texto.split("")
+    }else{
+      texto = texto.split("")
+      var newText = []
+      var auxText = []
+      for( var i = 0; i < texto.length; i++ ){
+        //Aqui hay caracter especial
+        if( texto[i].match(/\W/) != null ){
 
-    var selector = ""
-    if ( palabras ) {
-      selector = " "
+          if( auxText.length > 0 ){
+            newText.push( auxText.join("") )
+            auxText = []
+          }
+
+          newText.push( texto[i] )
+        }else{
+          auxText.push( texto[i] )
+        }
+      }
+
+      if( auxText.length > 0 ){
+        newText.push( auxText.join("") )
+      }
+
+      texto = JSON.parse( JSON.stringify( newText ) )
     }
-
-    texto = texto.split( selector )
 
     var diccionario = {}
     for( var i = 0; i < texto.length; i++){
-      if ( diccionario[ texto[i] ] == undefined ) {
-        diccionario[ texto[i] ] = 0
-      }
+      if( texto[i] != "\r" ){
+        if ( diccionario[ texto[i] ] == undefined ) {
+          diccionario[ texto[i] ] = 0
+        }
 
-      diccionario[ texto[i] ] += 1
+        diccionario[ texto[i] ] += 1
+      }
     }
 
     diccionario = sortProperties( diccionario )
@@ -237,8 +334,8 @@
       }  )
     }
 
-    console.log( "Prearbol" )
-    console.log( JSON.parse( JSON.stringify( arrayArbol ) ) )
+    // console.log( "Prearbol" )
+    // console.log( JSON.parse( JSON.stringify( arrayArbol ) ) )
 
     var auxValueNodo = ""
     while (true){
@@ -313,34 +410,51 @@
     for( var i = 0; i < texto.length; i++){
       bytesHoffman.push( traductor[ texto[i] ] )
     }
+
+    var bytesHoffmanString = bytesHoffman.join("")
+
+    salidaHolffman = bytesHoffmanString
+    var splitBytes = _.chunk( bytesHoffmanString.split(""), 8)
+    salidaDatos = ""
+    for( var i = 0; i < splitBytes.length; i++){
+      salidaDatos += String.fromCharCode( parseInt( splitBytes[i].join(""), 2 ) )
+    }
     
     document.getElementById("salidas").classList.remove("d-none")
 
-    document.getElementById("contadores").innerHTML = diccionario.map(function(x){ return x.join(" - ") }).join("<br>")
-    document.getElementById("valBinarios").innerHTML = traductorHTML
-    document.getElementById("bytesOriginal").innerHTML = originalBytes.join(" ")
-    document.getElementById("bytesHoffman").innerHTML = bytesHoffman.join(" ")
+    // document.getElementById("contadores").innerHTML = diccionario.map(function(x){ return x.join(" - ") }).join("<br>")
+    // document.getElementById("valBinarios").innerHTML = traductorHTML
+    document.getElementById("bytesOriginal").innerHTML = textoOrg.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
+    document.getElementById("bytesHoffman").innerHTML = ( encodeURI(salidaDatos).split(/%..|./).length - 1 ).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
 
-    console.log( "Diccionario" )
-    console.log( diccionario )
+    console.log("Convertido")
+    console.log( salidaDatos )
 
-    console.log( "Arbol" )
-    console.log( arrayArbol )
+    console.log("Bytes")
+    console.log( salidaHolffman )
+    console.log("")
+    
 
-    console.log( "Valores binarios" )
-    console.log( valores )
+    // console.log( "Diccionario" )
+    // console.log( diccionario )
 
-    console.log( "Grafica" )
-    console.log( grafica )
+    // console.log( "Arbol" )
+    // console.log( arrayArbol )
 
-    console.log( "Texto" )
-    console.log( textoOrg )
+    // console.log( "Valores binarios" )
+    // console.log( valores )
 
-    console.log( "Bytes originales" )
-    console.log( originalBytes )
+    // console.log( "Grafica" )
+    // console.log( grafica )
 
-    console.log( "Bytes Hoffman" )
-    console.log( bytesHoffman.join("") )
+    // console.log( "Texto" )
+    // console.log( textoOrg )
+
+    // console.log( "Bytes originales" )
+    // console.log( originalBytes.join("") )
+
+    // console.log( "Bytes Hoffman" )
+    // console.log( bytesHoffman.join("") )
 
     //Impresion de la grafica
     var data = new google.visualization.DataTable();
@@ -353,4 +467,30 @@
     // Draw the chart, setting the allowHtml option to true for the tooltips.
     chart.draw(data, {'allowHtml':true});
   }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function downloadFiles(){
+    if( salidaHolffman != ""){
+      download("fileCompreso.txt", salidaDatos )
+      download("fileBinary.txt", salidaHolffman )
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
 </script>
