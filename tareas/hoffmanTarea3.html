@@ -43,11 +43,19 @@
       </div>
 
       <div class="row">
-        <div class="col-12">
-          <h5> Entrada de datos </h5>
-          <input type="text" id="textoE" placeholder="Ingrese los valores">
+        <div class="col-12" id="inputs">
+          <div class="divInput">
+            <input type="number" step="any" class="input" placeholder="Ingrese dato">
+            <button onclick="addInput(this)"> + </button>
+            <button onclick="removeInput(this)"> - </button>
+            <span class="d-none"> Datos no validos </span>
+            <br>  
+          </div>
         </div>
+        <br><br>
+        <span id="limit1" class="d-none" > Datos no suman 1 </span>
       </div>
+
       <hr>
       <div class="row">
         <div class="col-12">
@@ -63,10 +71,19 @@
         </div>
       </div>
 
-      <div id="salidas" class="d-none" border="1">
+      <div id="salidas" class="d-none">
+
         <div class="row">
           <div class="col-12">
-            <table>
+            <strong> Datos de entrada </strong>  <span id="startData"></span>
+          </div>
+        </div>
+
+        <br><br>
+
+        <div class="row">
+          <div class="col-12">
+            <table border="1">
               <thead>
                 <tr>
                   <th>Sigma</th>
@@ -99,6 +116,32 @@
 
   google.charts.load('current', {packages:["orgchart"]});
   google.charts.setOnLoadCallback( enableChart );
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function addInput(elem){
+    var thisDiv = elem.parentNode
+    var parentDiv = thisDiv.parentNode
+    var newDiv = document.createElement("div")
+    newDiv.className = "divInput"
+    newDiv.innerHTML = '<input type="number" step="any" class="input" placeholder="Ingrese dato">\
+                          <button onclick="addInput(this)"> + </button>\
+                          <button onclick="removeInput(this)"> - </button>\
+                          <span class="d-none"> Datos no validos </span>\
+                          <br>'
+
+    parentDiv.insertBefore(newDiv, thisDiv.nextSibling)
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function removeInput(elem){
+    var inputs = document.getElementsByClassName("divInput")
+    if ( inputs.length > 1 ) {
+      var thisDiv = elem.parentNode
+      thisDiv.parentNode.removeChild(thisDiv); 
+    }
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -163,19 +206,56 @@
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   function runProgram(){
-    var text = document.getElementById('textoE').value
 
-    resolveHoffman( text )
+    var inputs = document.getElementsByClassName("input")
+    var ejecutar = true
+    var datos = []
+    for( var i = 0; i < inputs.length; i++){
+      var value = inputs[i].value
+      var message = inputs[i].parentNode.children[3]
+      message.classList.add("d-none")
+
+      if ( value == "" ) {
+        message.classList.remove("d-none")
+        ejecutar = false
+      }else{
+        value = parseFloat( value )
+        if ( value <= 0 || value >= 1) {
+          message.classList.remove("d-none")
+          ejecutar = false
+        }else{
+          datos.push( value )
+        }
+      }
+    }
+
+    if ( ejecutar ) {
+      if( datos.reduce((a, b) => a + b, 0) != 1 ) {
+        document.getElementById("limit1").classList.remove("d-none")
+        ejecutar = false
+      }else{
+        document.getElementById("limit1").classList.add("d-none")
+      }
+    }
+
+    if ( ejecutar ) {
+      resolveHoffman( datos )
+    }
+
+    // var text = document.getElementById('textoE').value
+
+    // resolveHoffman( text )
   }
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function resolveHoffman( texto ){
+  function resolveHoffman( textoOrg ){
  
     // var textoOrg = [0.30, 0.20, 0.25, 0.15, 0.10]//texto.join(",")
-    var textoOrg = [0.25, 0.25, 0.20, 0.20, 0.10]
+    // var textoOrg = [0.25, 0.25, 0.20, 0.20, 0.10]
     // var textoOrg = [0.05, 0.05, 0.15, 0.20, 0.25, 0.30]
+    var textoOrgAux = JSON.parse(JSON.stringify( textoOrg ) ) 
     var texto = textoOrg.sort()
-    var lastValue = textoOrg.shift()
+    var lastValue = textoOrg.sort().shift()
     var balanceIndex = ( 1 - lastValue ) / 2
 
     var auxValueNodo = ""
@@ -333,6 +413,8 @@
     var valoresArbol = encontrarLetra( arrayArbol, [], [], "", [], "" ) //.map(function(x){ return [ x[0], x[1].join("")] })
     var valores = valoresArbol[0]
     var grafica = valoresArbol[1]
+
+    document.getElementById("startData").innerHTML = textoOrgAux
 
     var table = document.getElementById("output")
     table.innerHTML = ""
