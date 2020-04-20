@@ -424,7 +424,7 @@
 
     // document.getElementById("contadores").innerHTML = diccionario.map(function(x){ return x.join(" - ") }).join("<br>")
     // document.getElementById("valBinarios").innerHTML = traductorHTML
-    document.getElementById("bytesOriginal").innerHTML = textoOrg.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
+    document.getElementById("bytesOriginal").innerHTML = ( encodeURI(textoOrg).split(/%..|./).length - 1 ).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
     document.getElementById("bytesHoffman").innerHTML = ( encodeURI(salidaDatos).split(/%..|./).length - 1 ).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
 
     console.log("Convertido")
@@ -487,7 +487,7 @@
 
   function downloadFiles(){
     if( salidaHolffman != ""){
-      download("fileCompreso.txt", salidaDatos )
+      download("textoCodificado.txt", salidaDatos )
       download("fileBinary.txt", salidaHolffman )
     }
   }
