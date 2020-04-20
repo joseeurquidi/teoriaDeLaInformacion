@@ -278,6 +278,10 @@
     }
 
     balanceando = true
+    if( parseFloat( Object.keys(arrayArbol).reverse()[0] ) >= balanceIndex ){
+      balanceando = false
+    }
+
     while (true){
 
       var valueDer = undefined
@@ -406,7 +410,7 @@
       izquierda: null
     }
 
-    arrayArbol[(1 - lastValue).toString()].extra = insertLast
+    arrayArbol[ Object.keys( arrayArbol )[0] ].extra = insertLast
     // arrayArbol["1"] = JSON.parse( JSON.stringify( arrayArbol[(1 - lastValue).toString()] ) )
     // delete arrayArbol[(1 - lastValue).toString()]
 

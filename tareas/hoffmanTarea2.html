@@ -263,6 +263,11 @@
     }
 
     balanceando = true
+
+    if( parseFloat( Object.keys(arrayArbol).reverse()[0] ) >= 0.5 ){
+      balanceando = false
+    }
+
     while (true){
 
       var valueDer = undefined
