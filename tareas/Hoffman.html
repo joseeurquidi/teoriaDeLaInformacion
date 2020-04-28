@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title> Hoffman </title>
+    <title> Huffman </title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -38,7 +38,7 @@
     <div class="container">
       <div class="row">
         <div class="col-12">
-          <h4> Hoffman </h4>
+          <h4> Huffman </h4>
         </div>
       </div>
 
@@ -110,7 +110,7 @@
 
         <div class="row">
           <div class="col-12">
-            <h5> Bytes hoffman </h5>
+            <h5> Bytes huffman </h5>
             <div id="bytesHoffman"></div>
           </div>
         </div>
@@ -370,6 +370,23 @@
       for( var i = 0; i < keysToDelete.length; i++){
         delete arrayArbol[ keysToDelete[i] ]
       }
+
+
+      if ( valueIzq == valueDer ) {
+        if ( derecha.izquierda != null || derecha.derecha != null &&
+            izquierda.izquierda == null || izquierda.derecha == null) {
+
+          var auxNodo = derecha
+          var auxValue = valueDer
+
+          derecha = JSON.parse( JSON.stringify( izquierda ))
+          valueDer = valueIzq
+
+          izquierda = JSON.parse( JSON.stringify( auxNodo ))
+          valueIzq = auxValue
+        }
+      }
+      
 
       var newValue = valueIzq + valueDer
 

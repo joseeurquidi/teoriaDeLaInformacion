@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title> Hoffman </title>
+    <title> Huffman </title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -33,19 +33,20 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="libs/fraction.min.js"></script>
   </head>
   <body>
     <div class="container">
       <div class="row">
         <div class="col-12">
-          <h4> Arbol de Hoffman Balanceado </h4>
+          <h4> Arbol de Huffman Balanceado </h4>
         </div>
       </div>
 
       <div class="row">
         <div class="col-12" id="inputs">
           <div class="divInput">
-            <input type="number" step="any" class="input" placeholder="Ingrese dato">
+            <input type="text" class="input" placeholder="Ingrese dato" style="width: 200px;">
             <button onclick="addInput(this)"> + </button>
             <button onclick="removeInput(this)"> - </button>
             <span class="d-none"> Datos no validos </span>
@@ -123,7 +124,7 @@
     var parentDiv = thisDiv.parentNode
     var newDiv = document.createElement("div")
     newDiv.className = "divInput"
-    newDiv.innerHTML = '<input type="number" step="any" class="input" placeholder="Ingrese dato">\
+    newDiv.innerHTML = '<input type="text" class="input" placeholder="Ingrese dato" style="width: 200px;">\
                           <button onclick="addInput(this)"> + </button>\
                           <button onclick="removeInput(this)"> - </button>\
                           <span class="d-none"> Datos no validos </span>\
@@ -186,7 +187,7 @@
 
     var keys = Object.keys(inputHash);
     keys.sort(function(a, b) {
-      return parseFloat(a) - parseFloat(b)
+      return new Fraction(a).sub( new Fraction(b))
     }).forEach(function(k) {
       resultHash[k] = inputHash[k];
     });
@@ -208,7 +209,13 @@
         message.classList.remove("d-none")
         ejecutar = false
       }else{
-        value = parseFloat( value )
+
+        try{
+          value = new Fraction( value )
+        }catch(e){
+          value = -1
+        }
+        
         if ( value <= 0 || value >= 1) {
           message.classList.remove("d-none")
           ejecutar = false
@@ -219,7 +226,13 @@
     }
 
     if ( ejecutar ) {
-      if( datos.reduce((a, b) => a + b, 0) != 1 ) {
+
+      var sum = new Fraction(0)
+      for( var i = 0; i < datos.length; i++){
+        sum = sum.add( datos[i] )
+      }
+      
+      if( sum != 1 ) {
         document.getElementById("limit1").classList.remove("d-none")
         ejecutar = false
       }else{
@@ -232,7 +245,6 @@
     }
 
     // var text = document.getElementById('textoE').value
-
     // resolveHoffman( text )
   }
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -264,7 +276,7 @@
 
     balanceando = true
 
-    if( parseFloat( Object.keys(arrayArbol).reverse()[0] ) >= 0.5 ){
+    if( new Fraction( Object.keys(arrayArbol).reverse()[0] ) >= 0.5 ){
       balanceando = false
     }
 
@@ -277,7 +289,7 @@
 
       if ( balanceando ) {
 
-        valueIzq = parseFloat( Object.keys(arrayArbol).reverse()[0] )
+        valueIzq = new Fraction( Object.keys(arrayArbol).reverse()[0] )
         izquierda = arrayArbol[ valueIzq ].pop()
 
         var keysToDelete = []
@@ -292,15 +304,15 @@
 
         var selectNodo = 0
         for( var i = 0; i < Object.keys(arrayArbol).length; i++){
-          var nodoEval = parseFloat( Object.keys(arrayArbol)[i] )
+          var nodoEval = new Fraction( Object.keys(arrayArbol)[i] )
 
-          if ( valueIzq + nodoEval <= 0.50 ) {
+          if ( valueIzq.add(nodoEval) <= 0.50 ) {
             selectNodo = i
           }
         }
 
 
-        valueDer = parseFloat( Object.keys(arrayArbol)[ selectNodo ] )
+        valueDer = new Fraction( Object.keys(arrayArbol)[ selectNodo ] )
 
         if ( arrayArbol[ valueDer ] == undefined ){
           arrayArbol[ valueIzq ] = izquierda
@@ -319,13 +331,13 @@
           delete arrayArbol[ keysToDelete[i] ]
         }
 
-        if ( valueIzq + valueDer >= 0.50 ) {
+        if ( valueIzq.add(valueDer) >= 0.50 ) {
           balanceando = false
         }
 
 
       }else{
-        valueDer = parseFloat( Object.keys(arrayArbol)[0])
+        valueDer = new Fraction( Object.keys(arrayArbol)[0])
         derecha = arrayArbol[ valueDer ].pop()
 
         var keysToDelete = []
@@ -339,7 +351,7 @@
         }
         
 
-        valueIzq = parseFloat( Object.keys(arrayArbol)[0] )
+        valueIzq = new Fraction( Object.keys(arrayArbol)[0] )
 
         if ( arrayArbol[ valueIzq ] == undefined ){
           arrayArbol[ valueDer ] = derecha
@@ -359,8 +371,23 @@
         }
       } 
 
+      if ( valueIzq == valueDer ) {
+        if ( derecha.izquierda != null || derecha.derecha != null &&
+            izquierda.izquierda == null || izquierda.derecha == null) {
 
-      var newValue = valueIzq + valueDer
+          var auxNodo = derecha
+          var auxValue = valueDer
+
+          derecha = JSON.parse( JSON.stringify( izquierda ))
+          valueDer = valueIzq
+
+          izquierda = JSON.parse( JSON.stringify( auxNodo ))
+          valueIzq = auxValue
+        }
+      }
+
+
+      var newValue = valueIzq.add(valueDer)
 
       var newValueDer = {}
       newValueDer[ valueDer ] = derecha
@@ -440,8 +467,10 @@
     for( var value in entropiaCalc ){
       var times = entropiaCalc[value]
 
-      if( value != 0){
-        entropia += (( times * value ) * Math.log2( value ))
+      var fracValue = new Fraction( value )
+
+      if( fracValue != 0){
+        entropia += (( times * fracValue ) * Math.log2( fracValue ))
       }
     }
 
