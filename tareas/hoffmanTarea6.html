@@ -1,0 +1,336 @@
+<html>
+  <head>
+    <title> Shannon - Fano - Elias</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <style>
+      input[type="text"] {
+        width: 100%; 
+        box-sizing: border-box;
+        -webkit-box-sizing:border-box;
+        -moz-box-sizing: border-box;
+      }
+
+      input[type="file"] {
+        width: 100%; 
+        box-sizing: border-box;
+        -webkit-box-sizing:border-box;
+        -moz-box-sizing: border-box;
+      }
+
+      .google-visualization-orgchart-linenode {
+        border: 0;
+      }
+      
+      table.google-visualization-orgchart-table {
+        border-collapse: separate;
+      }
+
+      tbody#thisTable td{
+        text-align: center;
+      }
+
+      th{
+        text-align: center;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="libs/fraction.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h4> Shannon - Fano - Elias </h4>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12" id="inputs">
+          <div class="divInput">
+            <input type="text" class="input" placeholder="Ingrese dato" style="width: 200px;">
+            <button onclick="addInput(this)"> + </button>
+            <button onclick="removeInput(this)"> - </button>
+            <span class="d-none"> Datos no validos </span>
+            <br>  
+          </div>
+        </div>
+        <br><br>
+        <span id="limit1" class="d-none" > Datos no suman 1 </span>
+      </div>
+
+      <hr>
+      <div class="row">
+        <div class="col-12">
+          <button id="buton" onclick="runProgram()" disabled>Aceptar</button>
+        </div>
+      </div>
+
+      <br>
+      
+      <div class="row">
+        <div class="col-12">
+          <div id="grafica"></div>
+        </div>
+      </div>
+
+      <div id="salidas" class="d-none">
+
+        <div class="row">
+          <div class="col-12">
+            <strong> Datos de entrada </strong>  <span id="startData"></span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <table width="100%" border="1">
+              <thead>
+                <tr>
+                  <th>f(i)</th>
+                  <th>F(i)</th>
+                  <th></th>
+                  <th>L(i)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="thisTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <br><br>
+
+        <div class="row">
+          <div class="col-12">
+            <strong> Rs: </strong><span id="idRS"></span><br>
+            <strong> Rc: </strong><span id="idRC"></span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </body>
+</html>
+
+<script>
+
+  google.charts.load('current', {packages:["orgchart"]});
+  google.charts.setOnLoadCallback( enableChart );
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  function addInput(elem){
+    var thisDiv = elem.parentNode
+    var parentDiv = thisDiv.parentNode
+    var newDiv = document.createElement("div")
+    newDiv.className = "divInput"
+    newDiv.innerHTML = '<input type="text" class="input" placeholder="Ingrese dato" style="width: 200px;">\
+                          <button onclick="addInput(this)"> + </button>\
+                          <button onclick="removeInput(this)"> - </button>\
+                          <span class="d-none"> Datos no validos </span>\
+                          <br>'
+
+    parentDiv.insertBefore(newDiv, thisDiv.nextSibling)
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function removeInput(elem){
+    var inputs = document.getElementsByClassName("divInput")
+    if ( inputs.length > 1 ) {
+      var thisDiv = elem.parentNode
+      thisDiv.parentNode.removeChild(thisDiv); 
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //Habilitar el boton cuando tienes internet
+  function enableChart(){
+    var button = document.getElementById("buton")
+    button.disabled = false
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function printDefaultDenominator( realValue, defDenominator ){
+    if ( realValue == 0 ) {
+      return 0
+    }else{
+      var scale = defDenominator / realValue.d
+      return realValue.n * scale + "/" + defDenominator
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  function runProgram(){
+
+    var inputs = document.getElementsByClassName("input")
+    var ejecutar = true
+    var datos = []
+    for( var i = 0; i < inputs.length; i++){
+      var value = inputs[i].value
+      var message = inputs[i].parentNode.children[3]
+      message.classList.add("d-none")
+
+      if ( value == "" ) {
+        message.classList.remove("d-none")
+        ejecutar = false
+      }else{
+
+        try{
+          value = new Fraction( value )
+        }catch(e){
+          value = -1
+        }
+        
+        if ( value <= 0 || value >= 1) {
+          message.classList.remove("d-none")
+          ejecutar = false
+        }else{
+          datos.push( value )
+        }
+      }
+    }
+
+    // datos = [ new Fraction("0.25"), new Fraction("0.25"), new Fraction("0.20"), new Fraction("0.15"), new Fraction("0.15")]
+
+    if ( ejecutar ) {
+
+      var sum = new Fraction(0)
+      for( var i = 0; i < datos.length; i++){
+        sum = sum.add( datos[i] )
+      }
+      
+      if( sum != 1 ) {
+        document.getElementById("limit1").classList.remove("d-none")
+        ejecutar = false
+      }else{
+        document.getElementById("limit1").classList.add("d-none")
+      }
+    }
+
+    if ( ejecutar ) {
+      resolveHoffman( datos )
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function binaryCalc( dato ){
+
+    var carry = []
+    var result = []
+    dato = dato.mul( new Fraction(2) )
+
+    while( true ){
+      if ( carry.includes( dato.toString() ) )  {
+        break
+      }
+
+      carry.push( dato.toString() )
+
+      if ( dato >= 1 ) {
+        result.push(1)
+        dato = dato.sub( new Fraction(1) )
+      }else{
+        result.push(0)
+      }
+
+      dato = dato.mul( new Fraction(2) )
+    }
+
+
+    return result
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function resolveHoffman( textoOrg ){
+ 
+    // var textoOrg = [0.30, 0.20, 0.25, 0.15, 0.10]//texto.join(",")
+    // var textoOrg = [0.15, 0.15, 0.25, 0.25, 0.20]
+    // var textoOrg = [0.05, 0.05, 0.15, 0.20, 0.25, 0.30]
+    var texto = textoOrg
+
+    document.getElementById("salidas").classList.remove("d-none")
+    document.getElementById("startData").innerHTML = textoOrg
+
+    var table = document.getElementById("thisTable")
+    table.innerHTML = ""
+
+    var previousf = new Fraction(0)
+    var previousF = new Fraction(0)
+
+    var wj = {}
+
+    for( var i = 0; i < texto.length; i++){
+      var thisf = texto[i]
+
+      var row = table.insertRow( -1 )
+      var cellf = row.insertCell(-1)
+      var cellF = row.insertCell(-1)
+      var cellBinary = row.insertCell(-1)
+      var cellL = row.insertCell(-1)
+      var cellR = row.insertCell(-1)
+
+      var thisF = thisf.add( previousf ).div( new Fraction(2) ).add( previousF )
+      var thisBinary = binaryCalc( thisF )
+      var thisL = Math.ceil( Math.log( 1 / thisf ) / Math.log(2) + 1 )
+
+      var resultBinary = thisBinary.slice(0)
+
+      while( resultBinary.length <= thisL ){
+
+        var auxResult = resultBinary.slice(0)
+        for( var j = 0; j < auxResult.length; j++){
+          resultBinary.push( auxResult[j] )
+        }
+      }
+
+
+      cellf.innerHTML = thisf.toString()
+      cellF.innerHTML = thisF.toString()
+      cellBinary.innerHTML = "(." + thisBinary.join("") + ")2"
+      cellL.innerHTML = thisL.toString()
+      cellR.innerHTML = resultBinary.join("").substr(0, thisL)
+
+      if ( wj[ thisL ] == undefined ) {
+        wj[ thisL ] = []
+      }
+
+      wj[ thisL ].push( thisf )
+
+      previousf = thisf
+      previousF = thisF
+    }
+
+    var rs = new Fraction(0)
+    for( var times in wj ){
+      var array = wj[ times ]
+
+      var sum = new Fraction(0)
+      for( var i = 0; i < array.length; i++){
+        sum = sum.add( array[i] )
+      }
+
+      rs = rs.add( sum.mul( times ) )
+    }
+
+
+    
+    document.getElementById("idRS").innerHTML = rs.toString()
+    document.getElementById("idRC").innerHTML = Fraction(8).div( rs ).toString()
+
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
