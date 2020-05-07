@@ -510,4 +510,43 @@
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // https://stackoverflow.com/questions/46460530/find-duplicate-phrases-not-just-words-in-array
+  function findRepeats(sentence){
+    var allPhrases = new Set()
+    var repeatedPhrases = new Set()
+    var hashRepeat = {}
+
+    var splitSentence = sentence.split(" ")
+    var phraseSize = splitSentence.length
+    var combPhrases = []
+
+    for( var i = phraseSize; i > 0; i--){
+      for( var j = 0; j + i <= phraseSize; j++ ){
+        combPhrases.push( splitSentence.slice(j, j + i) )
+      }
+    }
+
+    var phrases = combPhrases.map( function(x){ return x.join(" ") } )
+
+    for( var i = 0; i < phrases.length; i++){
+      var subPhrase = phrases[i]
+      if ( allPhrases.has( subPhrase ) ) {
+        repeatedPhrases.add( subPhrase )
+
+        if ( hashRepeat[ subPhrase ] == undefined ) {
+          hashRepeat[ subPhrase ] = 1
+        }
+
+        hashRepeat[ subPhrase ] += 1
+      }else{
+        allPhrases.add( subPhrase )
+      }
+    }
+
+    console.log( hashRepeat )
+
+    return [...repeatedPhrases]
+  }
+
+  console.log( findRepeats("¡Guerra, guerra sin tregua al que intente De la patria manchar los blasones! ¡guerra, guerra! los patrios pendones En las olas de sangre empapad. ¡guerra, guerra! en el monte, en el valle Los cañones horrísonos truenen Y los ecos sonoros resuenen Con las voces de ¡unión! ¡libertad! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón.") )
 </script>
