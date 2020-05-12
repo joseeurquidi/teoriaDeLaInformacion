@@ -236,6 +236,9 @@
       }
     }
 
+    datos = [ new Fraction("1/3"), new Fraction("1/3"), new Fraction("1/9"), new Fraction("1/9"), new Fraction("1/9")]
+
+
     if ( ejecutar ) {
 
       var sum = new Fraction(0)
@@ -281,7 +284,7 @@
 
       arrayArbol[ value ].push( { 
           isLetra: true, 
-          valor: value + auxValueNodo, 
+          valor: value.toString() + auxValueNodo, 
           derecha: null, 
           izquierda: null,
           extra: null
@@ -411,7 +414,7 @@
 
       var newElement = {
         isLetra: false, 
-        valor: newValue + auxValueNodo, 
+        valor: newValue.toString() + auxValueNodo, 
         derecha: newValueDer,
         izquierda: newValueIzq,
         extra: null
@@ -433,7 +436,7 @@
     var insertLast = {}
     insertLast[ lastValue ] = {
       isLetra: true, 
-      valor: lastValue + auxValueNodo + " ", 
+      valor: lastValue.toString() + auxValueNodo + " ", 
       derecha: null,
       izquierda: null
     }
@@ -476,6 +479,8 @@
         igualadores[ nodo[1] ].push( parseFloat( nodo[0] ) )
       }
     }
+
+    console.log( igualadores )
 
     var entropiaCalc = {}
     for( var i in igualadores){

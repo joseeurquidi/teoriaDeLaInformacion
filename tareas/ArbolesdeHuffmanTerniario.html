@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title> Huffman </title>
+    <title> Arboles de Huffman Terniario </title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -27,6 +27,10 @@
       table.google-visualization-orgchart-table {
         border-collapse: separate;
       }
+
+      *{
+        font-size: 1.05em;
+      }
     </style>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -39,12 +43,15 @@
     <div class="container">
       <div class="row">
         <div class="col-12">
-          <h4> Arbol de Huffman </h4>
+          <h4> Arbol de Huffman Balanceado Terceario </h4>
         </div>
       </div>
 
       <div class="row">
-        <div class="col-12" id="inputs">
+        <div class="col-6" id="inputs">
+
+          <input type="radio" id="numerico" name="entrada" value="numerico">
+          <label for="numerico">Numerico</label><br>
           <div class="divInput">
             <input type="text" class="input" placeholder="Ingrese dato" style="width: 200px;">
             <button onclick="addInput(this)"> + </button>
@@ -52,15 +59,25 @@
             <span class="d-none"> Datos no validos </span>
             <br>  
           </div>
+          <br><br>
+          <span id="limit1" class="d-none" > Datos no suman 1 </span>
         </div>
-        <br><br>
-        <span id="limit1" class="d-none" > Datos no suman 1 </span>
+
+        <div class="col-6">
+          <input type="radio" id="texto" name="entrada" value="texto">
+          <label for="texto">Texto</label><br>
+          <input type="text" placeholder="Ingrese diccionario" width="100%" id="diccionario">
+
+          <br><br>
+          <span id="limitLetter" class="d-none" > Datos deben de incluir mas de una letra en el diccionario </span>
+        </div>
+        
       </div>
 
       <hr>
       <div class="row">
         <div class="col-12">
-          <button id="buton" onclick="runProgram()" disabled>Corre</button>
+          <button id="buton" onclick="runProgram()" disabled>Aceptar</button>
         </div>
       </div>
 
@@ -97,22 +114,19 @@
         </div>
         
         <br><br>
-
         <div class="row">
           <div class="col-12">
             <strong> Ls: </strong><span id="idLS"></span><br>
             <strong> Rc: </strong><span id="idRC"></span>
           </div>
         </div>
+        <br>
 
         <div class="row">
           <div class="col-12">
-            <h5> Entropia: </h5><span id="entropia"></span>
+            <h5> Entropia: </h5><span id="entropia"></span> bits/s
           </div>
         </div>
-
-
-
 
       </div>
 
@@ -121,12 +135,13 @@
 </html>
 
 <script>
-
+  
+  document.getElementById('numerico').checked = true
   google.charts.load('current', {packages:["orgchart"]});
   google.charts.setOnLoadCallback( enableChart );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   function addInput(elem){
     var thisDiv = elem.parentNode
     var parentDiv = thisDiv.parentNode
@@ -149,6 +164,14 @@
       var thisDiv = elem.parentNode
       thisDiv.parentNode.removeChild(thisDiv); 
     }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //Habilitar el boton cuando tienes internet
+  function enableChart(){
+    var button = document.getElementById("buton")
+    button.disabled = false
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,28 +209,8 @@
         }
       }
     }
-  }
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //Habilitar el boton cuando tienes internet
-  function enableChart(){
-    var button = document.getElementById("buton")
-    button.disabled = false
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  function getSortedHash(inputHash){
-    var resultHash = {};
-
-    var keys = Object.keys(inputHash);
-    keys.sort(function(a, b) {
-      return new Fraction(a).sub( new Fraction(b))
-    }).forEach(function(k) {
-      resultHash[k] = inputHash[k];
-    });
-    return resultHash;
+    return input_array[l - 1];
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +227,7 @@
     }
     grafica.push([nameNodo, nameNodoPadre])
     //Ultimo nodo
-    if (valueNodo.izquierda == null && valueNodo.derecha == null){
+    if (valueNodo.izquierda == null && valueNodo.derecha == null && valueNodo.extra == null){
       valores.push([valueNodo.valor, indice ])
       return [valores, grafica]
     }else{
@@ -239,62 +242,119 @@
         valores = returnDerData[0]
         grafica = returnDerData[1]
       }
+
+      if (valueNodo.extra != null){
+        var returnDerData = encontrarLetra(valueNodo.extra, indice.concat("*"), valores, nameNodo, grafica, "*")
+        valores = returnDerData[0]
+        grafica = returnDerData[1]
+      }
     }
 
     return [valores, grafica]
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  function getSortedHash(inputHash){
+    var resultHash = {};
 
+    var keys = Object.keys(inputHash);
+    keys.sort(function(a, b) {
+      return new Fraction(a).sub( new Fraction(b))
+    }).forEach(function(k) {
+      resultHash[k] = inputHash[k];
+    });
+    return resultHash;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
   function runProgram(){
 
-    var inputs = document.getElementsByClassName("input")
-    var ejecutar = true
-    var datos = []
-    for( var i = 0; i < inputs.length; i++){
-      var value = inputs[i].value
-      var message = inputs[i].parentNode.children[3]
-      message.classList.add("d-none")
+    var radioEleccionNumerico = document.getElementById("numerico").checked == true
 
-      if ( value == "" ) {
-        message.classList.remove("d-none")
-        ejecutar = false
-      }else{
+    if ( radioEleccionNumerico ) {
+      var inputs = document.getElementsByClassName("input")
+      var ejecutar = true
+      var datos = []
+      for( var i = 0; i < inputs.length; i++){
+        var value = inputs[i].value
+        var message = inputs[i].parentNode.children[3]
+        message.classList.add("d-none")
 
-        try{
-          value = new Fraction( value )
-        }catch(e){
-          value = -1
-        }
-        
-        if ( value <= 0 || value >= 1) {
+        if ( value == "" ) {
           message.classList.remove("d-none")
           ejecutar = false
         }else{
-          datos.push( value )
+
+          try{
+            value = new Fraction( value )
+          }catch(e){
+            value = -1
+          }
+          
+          if ( value <= 0 || value >= 1) {
+            message.classList.remove("d-none")
+            ejecutar = false
+          }else{
+            datos.push( value )
+          }
         }
       }
-    }
 
-    datos = [ new Fraction("1/3"), new Fraction("1/3"), new Fraction("1/9"), new Fraction("1/9"), new Fraction("1/9")]
+      // datos = [ new Fraction("1/3"), new Fraction("1/3"), new Fraction("1/9"), new Fraction("1/9"), new Fraction("1/9")]
 
-    if ( ejecutar ) {
 
-      var sum = new Fraction(0)
-      for( var i = 0; i < datos.length; i++){
-        sum = sum.add( datos[i] )
+      if ( ejecutar ) {
+
+        var sum = new Fraction(0)
+        for( var i = 0; i < datos.length; i++){
+          sum = sum.add( datos[i] )
+        }
+        
+        if( sum != 1 ) {
+          document.getElementById("limit1").classList.remove("d-none")
+          ejecutar = false
+        }else{
+          document.getElementById("limit1").classList.add("d-none")
+        }
       }
+
+      if ( ejecutar ) {
+        resolveHoffman( datos )
+      }
+    }else{
+      var texto = document.getElementById('diccionario').value.split("")
+
+      // texto = "aaabbbcde".split("")
+
+      var diccionario = {}
+      for( var i = 0; i < texto.length; i++){
+        if( texto[i] != "\r" ){
+          if ( diccionario[ texto[i] ] == undefined ) {
+            diccionario[ texto[i] ] = 0
+          }
+
+          diccionario[ texto[i] ] += 1
+        }
+      }
+
+      var ejecutar = true;
       
-      if( sum != 1 ) {
-        document.getElementById("limit1").classList.remove("d-none")
+      document.getElementById("limitLetter").classList.add("d-none")
+      if( Object.keys( diccionario ).length <= 1){
         ejecutar = false
-      }else{
-        document.getElementById("limit1").classList.add("d-none")
+        document.getElementById("limitLetter").classList.remove("d-none")
       }
-    }
 
-    if ( ejecutar ) {
-      resolveHoffman( datos )
+      if ( ejecutar ) {
+        var datos = []
+        for( var letra in diccionario ){
+          var times = diccionario[ letra ]
+          datos.push( new Fraction( times + "/" + texto.length ) )
+        }
+
+        resolveHoffman( datos )
+      }
+
     }
 
     // var text = document.getElementById('textoE').value
@@ -304,16 +364,21 @@
 
   function resolveHoffman( textoOrg ){
  
-    // var textoOrg = [0.15, 0.15, 0.25, 0.25, 0.20]//texto.join(",")
+    // var textoOrg = [0.30, 0.20, 0.25, 0.15, 0.10]//texto.join(",")
+    // var textoOrg = [0.25, 0.25, 0.20, 0.20, 0.10]
     // var textoOrg = [0.05, 0.05, 0.15, 0.20, 0.25, 0.30]
+    var textoOrgAux = textoOrg.map(function(x) { return x.toString() } )
     var texto = textoOrg.sort()
+    var lastValue = new Fraction( textoOrg.sort().shift() )
+    var balanceIndex = ( 1 - lastValue ) / 2
 
     var auxValueNodo = ""
     var arrayArbol = {}
     var denominadores = []
+
     for( var i = 0; i < texto.length; i++){
-      denominadores.push( texto[i].d )
       var value = texto[i]
+      denominadores.push( texto[i].d )
 
       if( arrayArbol[ value ] == undefined ){
         arrayArbol[ value ] = []
@@ -323,47 +388,109 @@
           isLetra: true, 
           valor: value.toString() + auxValueNodo, 
           derecha: null, 
-          izquierda: null 
+          izquierda: null,
+          extra: null
       }  )
       auxValueNodo += " "
     }
 
     var lcm = lcm_more_than_two_numbers( _.uniq( denominadores ) )
-    
+
+    balanceando = true
+    if( new Fraction( Object.keys(arrayArbol).reverse()[0] ) >= balanceIndex ){
+      balanceando = false
+    }
+
     while (true){
 
-      var valueDer = new Fraction( Object.keys(arrayArbol)[0] )
-      var derecha = arrayArbol[ valueDer ].pop()
+      var valueDer = undefined
+      var derecha = undefined
+      var valueIzq = undefined
+      var izquierda = undefined
 
-      var keysToDelete = []
-      for( var key in arrayArbol ){
-        if ( arrayArbol[ key ].length == 0 ) {
-          keysToDelete.push( key )
+      if ( balanceando ) {
+
+        valueIzq = new Fraction( Object.keys(arrayArbol).reverse()[0] )
+        izquierda = arrayArbol[ valueIzq ].pop()
+
+        var keysToDelete = []
+        for( var key in arrayArbol ){
+          if ( arrayArbol[ key ].length == 0 ) {
+            keysToDelete.push( key )
+          }
         }
-      }
-      for( var i = 0; i < keysToDelete.length; i++){
-        delete arrayArbol[ keysToDelete[i] ]
-      }
-      
-
-      var valueIzq = new Fraction( Object.keys(arrayArbol)[0] )
-
-      if ( arrayArbol[ valueIzq ] == undefined ){
-        arrayArbol[ valueDer ] = derecha
-        break
-      }
-
-      var izquierda = arrayArbol[ valueIzq ].pop()
-
-      var keysToDelete = []
-      for( var key in arrayArbol ){
-        if ( arrayArbol[ key ].length == 0 ) {
-          keysToDelete.push( key )
+        for( var i = 0; i < keysToDelete.length; i++){
+          delete arrayArbol[ keysToDelete[i] ]
         }
-      }
-      for( var i = 0; i < keysToDelete.length; i++){
-        delete arrayArbol[ keysToDelete[i] ]
-      }
+
+        var selectNodo = 0
+        for( var i = 0; i < Object.keys(arrayArbol).length; i++){
+          var nodoEval = new Fraction( Object.keys(arrayArbol)[i] )
+
+          if ( valueIzq.add(nodoEval) <= balanceIndex ) {
+            selectNodo = i
+          }
+        }
+
+
+        valueDer = new Fraction( Object.keys(arrayArbol)[ selectNodo ] )
+
+        if ( arrayArbol[ valueDer ] == undefined ){
+          arrayArbol[ valueIzq ] = izquierda
+          break
+        }
+
+        derecha = arrayArbol[ valueDer ].pop()
+
+        var keysToDelete = []
+        for( var key in arrayArbol ){
+          if ( arrayArbol[ key ].length == 0 ) {
+            keysToDelete.push( key )
+          }
+        }
+        for( var i = 0; i < keysToDelete.length; i++){
+          delete arrayArbol[ keysToDelete[i] ]
+        }
+
+        if ( valueIzq.add(valueDer) >= balanceIndex ) {
+          balanceando = false
+        }
+
+
+      }else{
+        valueDer = new Fraction( Object.keys(arrayArbol)[0])
+        derecha = arrayArbol[ valueDer ].pop()
+
+        var keysToDelete = []
+        for( var key in arrayArbol ){
+          if ( arrayArbol[ key ].length == 0 ) {
+            keysToDelete.push( key )
+          }
+        }
+        for( var i = 0; i < keysToDelete.length; i++){
+          delete arrayArbol[ keysToDelete[i] ]
+        }
+        
+
+        valueIzq = new Fraction( Object.keys(arrayArbol)[0] )
+
+        if ( arrayArbol[ valueIzq ] == undefined ){
+          arrayArbol[ valueDer ] = derecha
+          break
+        }
+
+        izquierda = arrayArbol[ valueIzq ].pop()
+
+        var keysToDelete = []
+        for( var key in arrayArbol ){
+          if ( arrayArbol[ key ].length == 0 ) {
+            keysToDelete.push( key )
+          }
+        }
+        for( var i = 0; i < keysToDelete.length; i++){
+          delete arrayArbol[ keysToDelete[i] ]
+        }
+      } 
 
 
       if ( valueIzq == valueDer ) {
@@ -382,7 +509,7 @@
       }
 
 
-      var newValue = valueIzq.add(valueDer)
+      var newValue = valueIzq.add( valueDer )
 
       var newValueDer = {}
       newValueDer[ valueDer ] = derecha
@@ -391,9 +518,10 @@
 
       var newElement = {
         isLetra: false, 
-        valor: newValue.toString() + auxValueNodo, 
+        valor: newValue.toString()  + auxValueNodo, 
         derecha: newValueDer,
-        izquierda: newValueIzq
+        izquierda: newValueIzq,
+        extra: null
       }
 
       auxValueNodo += " "
@@ -404,22 +532,30 @@
 
       arrayArbol[ newValue ].push( newElement )
       arrayArbol = getSortedHash( arrayArbol )
-
     }
 
     //Arbol completado
     document.getElementById("salidas").classList.remove("d-none")
 
+    var insertLast = {}
+    insertLast[ lastValue ] = {
+      isLetra: true, 
+      valor: lastValue.toString()  + auxValueNodo + " ", 
+      derecha: null,
+      izquierda: null
+    }
+
+    arrayArbol[ Object.keys( arrayArbol )[0] ].extra = insertLast
+    // arrayArbol["1"] = JSON.parse( JSON.stringify( arrayArbol[(1 - lastValue).toString()] ) )
+    // delete arrayArbol[(1 - lastValue).toString()]
+
     var valoresArbol = encontrarLetra( arrayArbol, [], [], "", [], "" ) //.map(function(x){ return [ x[0], x[1].join("")] })
     var valores = valoresArbol[0]
     var grafica = valoresArbol[1]
 
-    console.log( valores )
-
-    document.getElementById("startData").innerHTML = textoOrg
+    document.getElementById("startData").innerHTML = textoOrgAux
 
     var contDigitS = {}
-
     var table = document.getElementById("output")
     table.innerHTML = ""
     for( var i = 0; i < valores.length; i++){
@@ -444,6 +580,7 @@
 
     document.getElementById("idLS").innerHTML = printDefaultDenominator(ls, lcm)
     document.getElementById("idRC").innerHTML = new Fraction(8).div( ls ).round(4) + " bits/s"
+    
 
     var igualadores = {}
     for( var i = 0; i < grafica.length; i++){
@@ -465,12 +602,37 @@
 
     var entropiaCalc = {}
     for( var i in igualadores){
-      var resta = igualadores[i][0] - igualadores[i][1]
-      if( entropiaCalc[ resta ] == undefined ){
-        entropiaCalc[ resta ] = 0
-      }
 
-      entropiaCalc[ resta ] += 1
+      if( igualadores[i].length == 2 ){
+        var resta = igualadores[i][0] -  igualadores[i][1]
+        if( entropiaCalc[ resta ] == undefined ){
+          entropiaCalc[ resta ] = 0
+        }
+
+        entropiaCalc[ resta ] += 1
+      }else{
+        var resta = igualadores[i][0] -  igualadores[i][1]
+        if( entropiaCalc[ resta ] == undefined ){
+          entropiaCalc[ resta ] = 0
+        }
+
+        entropiaCalc[ resta ] += 1
+
+        resta = igualadores[i][1] -  igualadores[i][2]
+        if( entropiaCalc[ resta ] == undefined ){
+          entropiaCalc[ resta ] = 0
+        }
+
+        entropiaCalc[ resta ] += 1
+
+        resta = igualadores[i][0] -  igualadores[i][2]
+        if( entropiaCalc[ resta ] == undefined ){
+          entropiaCalc[ resta ] = 0
+        }
+
+        entropiaCalc[ resta ] += 1
+      }
+      
     }
 
     for( var i = 0; i < textoOrg.length; i++){
@@ -487,6 +649,10 @@
     for( var value in entropiaCalc ){
       var times = entropiaCalc[value]
 
+      if( isNaN(value) ){
+        value = 0
+      }
+
       var fracValue = new Fraction( value )
 
       if( fracValue != 0){
@@ -495,9 +661,9 @@
     }
 
     
-    document.getElementById("entropia").innerHTML = entropia * -1
+    document.getElementById("entropia").innerHTML = (entropia * -1).toFixed(4)
 
-    
+    console.log(grafica)
     //Impresion de la grafica
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Contenido');
