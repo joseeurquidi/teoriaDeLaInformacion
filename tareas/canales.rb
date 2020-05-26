@@ -1,4 +1,4 @@
-# no puede haber caracteres repetidos
+# ? no puede haber caracteres repetidos
 
 require 'awesome_print'
 require 'terminal-table'
@@ -14,8 +14,6 @@ def candidates(array, ll, old_data)
         end
     end
 
-
-
     evalsData.each do |elem|
         #elem.delete_if{|y| y.nil? }
 
@@ -30,22 +28,43 @@ def candidates(array, ll, old_data)
 end
 
 while true
+
+    puts "=" * 30
     puts "Ingrese alfabeto de entrada (separando los elementos por comas)"
     inputA = gets.chomp.split(",") #[ 0, 1, 22 ]
     puts "Ingrese alfabeto de salida (separando los elementos por comas)"
     inputB = gets.chomp.split(",") #[ 0, 3, 444, 5555 ]
 
-    print inputA
-    puts ""
-    print inputB
-    puts ""
-    puts ""
+    if inputA.count != inputA.uniq.count || inputB.count != inputB.uniq.count
 
-    puts "Es correcta la entrada de datos? (s/n)"
-    salida = gets.chomp.downcase
-    if salida == "s"
-        break
+      puts ""
+      puts ""
+      puts "ERROR"
+      if inputA.count != inputA.uniq.count
+        puts "Alfabeto de entrada contiene repetidos"
+      end
+
+      if inputB.count != inputB.uniq.count
+        puts "Alfabeto de salida contiene repetidos"
+      end
+      puts ""
+    
+    else
+      puts ""
+      print inputA
+      puts ""
+      print inputB
+      puts ""
+      puts ""
+
+      puts "Es correcta la entrada de datos? (s/n)"
+      salida = gets.chomp.downcase
+      if salida == "s"
+          break
+      end
     end
+
+    
 end
 
 

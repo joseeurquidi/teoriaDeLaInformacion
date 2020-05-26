@@ -69,6 +69,8 @@
           <label for="letras">letras</label><br>
           <input type="radio" id="palabras" name="tipo" value="palabras">
           <label for="palabras">palabras</label><br>
+          <input type="radio" id="frases" name="tipo" value="frases">
+          <label for="frases">frases</label><br>
         </div>
       </div>
 
@@ -112,6 +114,13 @@
           <div class="col-12">
             <h5> Bytes huffman </h5>
             <div id="bytesHoffman"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <h5> Radio de compresion </h5>
+            <div id="radioCompresion"></div>
           </div>
         </div>
 
@@ -269,42 +278,56 @@
  
     var palabras = document.getElementById('palabras').checked == true
     var letras = document.getElementById('letras').checked == true
+    var palabras = document.getElementById('palabras').checked == true
+    var frases = document.getElementById('frases').checked == true
+    
 
     var textoOrg = texto
     var originalBytes = []
     for (var i = 0; i < texto.length; i++){  
       originalBytes.push(texto.charCodeAt(i).toString(2));
     }
+    var diccionario = {}
     
     if ( letras ) {
       texto = texto.split("")
+    }else if( palabras ) {
+      // texto = texto.split("")
+      // var newText = []
+      // var auxText = []
+      // for( var i = 0; i < texto.length; i++ ){
+      //   //Aqui hay caracter especial
+      //   if( texto[i].match(/\W/) != null ){
+
+      //     if( auxText.length > 0 ){
+      //       newText.push( auxText.join("") )
+      //       auxText = []
+      //     }
+
+      //     newText.push( texto[i] )
+      //   }else{
+      //     auxText.push( texto[i] )
+      //   }
+      // }
+
+      // if( auxText.length > 0 ){
+      //   newText.push( auxText.join("") )
+      // }
+
+      // texto = JSON.parse( JSON.stringify( newText ) )
+
+      texto = texto.split(" ") //wordSeparation( texto )
     }else{
-      texto = texto.split("")
-      var newText = []
-      var auxText = []
-      for( var i = 0; i < texto.length; i++ ){
-        //Aqui hay caracter especial
-        if( texto[i].match(/\W/) != null ){
+      var frasesRepetidas = bestCandidatesPhrases( texto )
+      for( var frase in frasesRepetidas ){
+        diccionario[ frase ] = frasesRepetidas[ frase ]
 
-          if( auxText.length > 0 ){
-            newText.push( auxText.join("") )
-            auxText = []
-          }
-
-          newText.push( texto[i] )
-        }else{
-          auxText.push( texto[i] )
-        }
+        texto = texto.split( frase ).join("")
       }
 
-      if( auxText.length > 0 ){
-        newText.push( auxText.join("") )
-      }
-
-      texto = JSON.parse( JSON.stringify( newText ) )
+      texto = texto.split(" ") //wordSeparation( texto )
     }
 
-    var diccionario = {}
     for( var i = 0; i < texto.length; i++){
       if( texto[i] != "\r" ){
         if ( diccionario[ texto[i] ] == undefined ) {
@@ -441,15 +464,19 @@
 
     // document.getElementById("contadores").innerHTML = diccionario.map(function(x){ return x.join(" - ") }).join("<br>")
     // document.getElementById("valBinarios").innerHTML = traductorHTML
+    var tamanoBytesOriginal = ( encodeURI(textoOrg).split(/%..|./).length - 1 )
+    var tamanoByteHoffman = ( encodeURI(salidaDatos).split(/%..|./).length - 1 )
     document.getElementById("bytesOriginal").innerHTML = ( encodeURI(textoOrg).split(/%..|./).length - 1 ).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
     document.getElementById("bytesHoffman").innerHTML = ( encodeURI(salidaDatos).split(/%..|./).length - 1 ).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
 
-    console.log("Convertido")
-    console.log( salidaDatos )
+    document.getElementById("radioCompresion").innerHTML = ( tamanoByteHoffman / tamanoBytesOriginal * 100 ).toFixed(4) + " %"
 
-    console.log("Bytes")
-    console.log( salidaHolffman )
-    console.log("")
+    // console.log("Convertido")
+    // console.log( salidaDatos )
+
+    // console.log("Bytes")
+    // console.log( salidaHolffman )
+    // console.log("")
     
 
     // console.log( "Diccionario" )
@@ -483,6 +510,7 @@
     var chart = new google.visualization.OrgChart(document.getElementById('grafica'));
     // Draw the chart, setting the allowHtml option to true for the tooltips.
     chart.draw(data, {'allowHtml':true});
+    console.log( "termino" )
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -510,7 +538,89 @@
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  function getSortedHash(inputHash){
+    var resultHash = {};
+
+    var keys = Object.keys(inputHash);
+    keys.sort(function(a, b) {
+      return a.split(" ").length - b.split(" ").length
+    }).forEach(function(k) {
+      resultHash[k] = inputHash[k];
+    });
+    return resultHash;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function wordSeparation( text ){
+    text = text.split("")
+    var newText = []
+    var auxText = []
+    for( var i = 0; i < text.length; i++ ){
+      //Aqui hay caracter especial
+      if( text[i].match(/\W/) != null ){
+
+        if( auxText.length > 0 ){
+          newText.push( auxText.join("") )
+          auxText = []
+        }
+
+        newText.push( text[i] )
+      }else{
+        auxText.push( text[i] )
+      }
+    }
+
+    if( auxText.length > 0 ){
+      newText.push( auxText.join("") )
+    }
+
+    text = JSON.parse( JSON.stringify( newText ) )
+
+    return text
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
   // https://stackoverflow.com/questions/46460530/find-duplicate-phrases-not-just-words-in-array
+  function findRepeatsOld(sentence){
+    var allPhrases = new Set()
+    var repeatedPhrases = new Set()
+    var hashRepeat = {}
+
+    var splitSentence = sentence.split(" ")
+    var phraseSize = splitSentence.length
+    var combPhrases = []
+
+    for( var i = phraseSize; i > 0; i--){
+      for( var j = 0; j + i <= phraseSize; j++ ){
+        combPhrases.push( splitSentence.slice(j, j + i) )
+      }
+    }
+
+    var phrases = combPhrases.map( function(x){ return x.join(" ") } )
+
+    for( var i = 0; i < phrases.length; i++){
+      var subPhrase = phrases[i]
+      if ( allPhrases.has( subPhrase ) ) {
+        repeatedPhrases.add( subPhrase )
+
+        if ( hashRepeat[ subPhrase ] == undefined ) {
+          hashRepeat[ subPhrase ] = 1
+        }
+
+        hashRepeat[ subPhrase ] += 1
+      }else{
+        allPhrases.add( subPhrase )
+      }
+    }
+
+    //console.log( hashRepeat )
+
+    return hashRepeat //[...repeatedPhrases]
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   function findRepeats(sentence){
     var allPhrases = new Set()
     var repeatedPhrases = new Set()
@@ -543,10 +653,50 @@
       }
     }
 
-    console.log( hashRepeat )
+    //console.log( hashRepeat )
 
-    return [...repeatedPhrases]
+    return hashRepeat //[...repeatedPhrases]
   }
 
-  console.log( findRepeats("Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Ciña ¡oh patria! tus sienes de oliva De la paz el arcángel divino Que en el cielo tu eterno destino Por el dedo de dios se escribió. Más si osare un extraño enemigo Profanar con su planta tu suelo Piensa ¡oh patria querida! que el cielo Un soldado en cada hijo te dio. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Guerra, guerra sin tregua al que intente De la patria manchar los blasones! ¡guerra, guerra! los patrios pendones En las olas de sangre empapad. ¡guerra, guerra! en el monte, en el valle Los cañones horrísonos truenen Y los ecos sonoros resuenen Con las voces de ¡unión! ¡libertad! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Antes, patria, que inermes tus hijos Bajo el yugo su cuello dobleguen Tus campiñas con sangre se rieguen Sobre sangre se estampe su pie. Y tus templos, palacios y torres Se derrumben con hórrido estruendo Y sus ruinas existan diciendo: De mil héroes la patria aquí fue. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Patria! ¡patria! tus hijos te juran Exhalar en tus aras su aliento Si el clarín con su bélico acento Nos convoca a lidiar con valor. ¡para ti las guirnaldas de oliva! ¡un recuerdo para ellos de gloria! ¡un laurel para ti de victoria! ¡un sepulcro para ellos de honor! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón.") )
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function bestCandidatesPhrases( sentence ){
+    var hashPhrases = findRepeats( sentence )
+    hashPhrases = getSortedHash( hashPhrases )
+
+    var hashCandidades = {}
+    for( var phrase in hashPhrases ){
+      // console.log( "phrase => " + phrase )
+      var freq = hashPhrases[ phrase ]
+
+      if ( phrase.split(" ").length > 1 ) {
+        var salidas = []
+        for( var candidates in hashCandidades ){
+          if ( phrase.includes( candidates ) ) {
+            // console.log("salio => " + candidates)
+            salidas.push( candidates )
+          }
+        }
+
+        if ( salidas.length > 0 ) {
+          for( var i = 0; i < salidas.length; i++){
+            delete hashCandidades[ salidas[i] ]
+          }
+        }
+
+        // console.log("ingreso => " + phrase)
+        hashCandidades[ phrase ] = freq
+        // console.log( "==============")
+      }
+
+    }
+
+    return hashCandidades
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  // console.log( findRepeats("Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Ciña ¡oh patria! tus sienes de oliva De la paz el arcángel divino Que en el cielo tu eterno destino Por el dedo de dios se escribió. Más si osare un extraño enemigo Profanar con su planta tu suelo Piensa ¡oh patria querida! que el cielo Un soldado en cada hijo te dio. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Guerra, guerra sin tregua al que intente De la patria manchar los blasones! ¡guerra, guerra! los patrios pendones En las olas de sangre empapad. ¡guerra, guerra! en el monte, en el valle Los cañones horrísonos truenen Y los ecos sonoros resuenen Con las voces de ¡unión! ¡libertad! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Antes, patria, que inermes tus hijos Bajo el yugo su cuello dobleguen Tus campiñas con sangre se rieguen Sobre sangre se estampe su pie. Y tus templos, palacios y torres Se derrumben con hórrido estruendo Y sus ruinas existan diciendo: De mil héroes la patria aquí fue. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Patria! ¡patria! tus hijos te juran Exhalar en tus aras su aliento Si el clarín con su bélico acento Nos convoca a lidiar con valor. ¡para ti las guirnaldas de oliva! ¡un recuerdo para ellos de gloria! ¡un laurel para ti de victoria! ¡un sepulcro para ellos de honor! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón.") )
+
 </script>
