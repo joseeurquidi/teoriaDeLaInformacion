@@ -436,8 +436,11 @@
 
 
     //Arbol completado
+    console.log( arrayArbol )
     var valoresArbol = encontrarLetra( arrayArbol, [], [], "", []) //.map(function(x){ return [ x[0], x[1].join("")] })
     var valores = valoresArbol[0]
+
+    // console.log( arrayArbol )
     var grafica = valoresArbol[1]
     var traductor = {}
     var traductorHTML = ""
@@ -466,8 +469,8 @@
     // document.getElementById("valBinarios").innerHTML = traductorHTML
     var tamanoBytesOriginal = ( encodeURI(textoOrg).split(/%..|./).length - 1 )
     var tamanoByteHoffman = ( encodeURI(salidaDatos).split(/%..|./).length - 1 )
-    document.getElementById("bytesOriginal").innerHTML = ( encodeURI(textoOrg).split(/%..|./).length - 1 ).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
-    document.getElementById("bytesHoffman").innerHTML = ( encodeURI(salidaDatos).split(/%..|./).length - 1 ).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
+    document.getElementById("bytesOriginal").innerHTML = tamanoBytesOriginal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
+    document.getElementById("bytesHoffman").innerHTML = tamanoByteHoffman.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bytes"
 
     document.getElementById("radioCompresion").innerHTML = ( tamanoByteHoffman / tamanoBytesOriginal * 100 ).toFixed(4) + " %"
 
@@ -638,6 +641,10 @@
 
     var phrases = combPhrases.map( function(x){ return x.join(" ") } )
 
+    console.log( phraseSize )
+    console.log( phrases.length )
+    console.log( combPhrases.length )
+
     for( var i = 0; i < phrases.length; i++){
       var subPhrase = phrases[i]
       if ( allPhrases.has( subPhrase ) ) {
@@ -697,6 +704,6 @@
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  // console.log( findRepeats("Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Ciña ¡oh patria! tus sienes de oliva De la paz el arcángel divino Que en el cielo tu eterno destino Por el dedo de dios se escribió. Más si osare un extraño enemigo Profanar con su planta tu suelo Piensa ¡oh patria querida! que el cielo Un soldado en cada hijo te dio. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Guerra, guerra sin tregua al que intente De la patria manchar los blasones! ¡guerra, guerra! los patrios pendones En las olas de sangre empapad. ¡guerra, guerra! en el monte, en el valle Los cañones horrísonos truenen Y los ecos sonoros resuenen Con las voces de ¡unión! ¡libertad! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Antes, patria, que inermes tus hijos Bajo el yugo su cuello dobleguen Tus campiñas con sangre se rieguen Sobre sangre se estampe su pie. Y tus templos, palacios y torres Se derrumben con hórrido estruendo Y sus ruinas existan diciendo: De mil héroes la patria aquí fue. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Patria! ¡patria! tus hijos te juran Exhalar en tus aras su aliento Si el clarín con su bélico acento Nos convoca a lidiar con valor. ¡para ti las guirnaldas de oliva! ¡un recuerdo para ellos de gloria! ¡un laurel para ti de victoria! ¡un sepulcro para ellos de honor! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón.") )
+  console.log( findRepeats("Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Ciña ¡oh patria! tus sienes de oliva De la paz el arcángel divino Que en el cielo tu eterno destino Por el dedo de dios se escribió. Más si osare un extraño enemigo Profanar con su planta tu suelo Piensa ¡oh patria querida! que el cielo Un soldado en cada hijo te dio. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Guerra, guerra sin tregua al que intente De la patria manchar los blasones! ¡guerra, guerra! los patrios pendones En las olas de sangre empapad. ¡guerra, guerra! en el monte, en el valle Los cañones horrísonos truenen Y los ecos sonoros resuenen Con las voces de ¡unión! ¡libertad! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. Antes, patria, que inermes tus hijos Bajo el yugo su cuello dobleguen Tus campiñas con sangre se rieguen Sobre sangre se estampe su pie. Y tus templos, palacios y torres Se derrumben con hórrido estruendo Y sus ruinas existan diciendo: De mil héroes la patria aquí fue. Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón. ¡Patria! ¡patria! tus hijos te juran Exhalar en tus aras su aliento Si el clarín con su bélico acento Nos convoca a lidiar con valor. ¡para ti las guirnaldas de oliva! ¡un recuerdo para ellos de gloria! ¡un laurel para ti de victoria! ¡un sepulcro para ellos de honor! Mexicanos, al grito de guerra El acero aprestad y el bridón Y retiemble en sus centros la tierra. Al sonoro rugir del cañón.") )
 
 </script>

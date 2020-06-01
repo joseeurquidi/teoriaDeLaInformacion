@@ -1,0 +1,543 @@
+<html>
+  <head>
+    <title> Aritmetica Adaptativa </title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <style>
+      input[type="text"] {
+        width: 100%; 
+        box-sizing: border-box;
+        -webkit-box-sizing:border-box;
+        -moz-box-sizing: border-box;
+      }
+
+      input[type="file"] {
+        width: 100%; 
+        box-sizing: border-box;
+        -webkit-box-sizing:border-box;
+        -moz-box-sizing: border-box;
+      }
+
+      .google-visualization-orgchart-linenode {
+        border: 0;
+      }
+      
+      table.google-visualization-orgchart-table {
+        border-collapse: separate;
+      }
+
+      *{
+        font-size: 1.05em;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+    <script type="text/javascript" src="libs/fraction.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h4> Aritmetica Adaptativa </h4>
+        </div>
+      </div>
+  
+      <br>
+      <div class="row">
+        <div class="col-12" id="inputs">
+
+          <div class="divInput">
+            <input type="text" class="input" placeholder="Ingrese dato" style="width: 200px;">
+            <button onclick="addInput(this)"> + </button>
+            <button onclick="removeInput(this)"> - </button>
+            <span class="d-none"> Datos no validos </span>
+            <br>  
+          </div>
+          <br><br>
+          <span id="limit1" class="d-none" > Datos no suman 1 </span>
+
+          <input type="text" placeholder="Ingrese diccionario" width="100%" id="diccionario">
+
+          <br><br>
+          <span id="limitLetter" class="d-none" > Letras incorrectas </span>
+        </div>
+
+        <input type="radio" id="metodo1" name="entrada" value="metodo1">
+        <label for="metodo1">Metodo 1</label><br>
+        <input type="radio" id="metodo2" name="entrada" value="metodo2">
+        <label for="metodo2">Metodo 2</label><br>
+        
+      </div>
+
+      <hr>
+      <div class="row">
+        <div class="col-12">
+          <button id="buton" onclick="runProgram()">Aceptar</button>
+        </div>
+      </div>
+
+      <br>
+      
+
+      <div id="salidas" class="d-none">
+        <div class="row">
+          <div class="col-12">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th> Letra </th>
+                  <th> Valor </th>  
+                </tr>
+              </thead>
+
+              <tbody id="datosEntrada">
+                
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <br>
+
+        <div class="row">
+          <div class="col-12">
+            Lambda: <span id="lambda"></span><br>
+            Alpha: <span id="alpha"></span><br>
+            Beta: <span id="beta"></span><br>
+
+            <!-- startAlphaValues: <span id="startAlphaValues"></span> -->
+          </div>
+        </div>
+        
+        <br>
+
+        <div class="row">
+          <div class="col-12">
+            <table border="1">
+              <thead>
+                <tr>
+                  <th> Letras </th>
+                  <th> lambda </th>
+                  <th> alpha </th>
+                  <th> beta </th>
+                </tr>
+              </thead>
+
+              <tbody id="tableAlpha">
+                
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="salidaMetodo1" class="d-none">
+          <div class="row">
+            <div class="col-12">
+              2t: <span id="rota"></span><br>
+              2tAlpha: <span id="lambdaAlpha"></span><br>
+              2tBeta: <span id="lambdaBeta"></span><br>
+              x: <span id="x"></span><br>
+              simplificadoX: <span id="simplificadoX"></span><br>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <table border="1">
+                <thead>
+                  <th> Fraccion </th>
+                  <th> binario </th>
+                </thead>
+
+                <tbody id="tableBinario1">
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              R: <span id="R"></span><br>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div id="salidaMetodo2" class="d-none">
+
+          <br>
+          <div class="row">
+            <div class="col-12">
+              <table border="1">
+                <thead>
+                  <tr>
+                    <th> Dato </th>
+                    <th> binario </th>
+                  </tr>
+                </thead>
+
+                <tbody id="binarioA">
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <br>
+
+          <div class="row">
+            <div class="col-12">
+              <table border="1">
+                <thead>
+                  <tr>
+                    <th> Dato </th>
+                    <th> binario </th>
+                  </tr>
+                </thead>
+
+                <tbody id="binarioB">
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <br>
+          <div class="row">
+            <div class="col-12">
+              rAlpha: <span id="rAlpha"></span><br>
+              rBeta: <span id="rBeta"></span><br>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </body>
+</html>
+
+<script>
+  
+  document.getElementById("metodo1").checked = true
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  function addInput(elem){
+    var thisDiv = elem.parentNode
+    var parentDiv = thisDiv.parentNode
+    var newDiv = document.createElement("div")
+    newDiv.className = "divInput"
+    newDiv.innerHTML = '<input type="text" class="input" placeholder="Ingrese dato" style="width: 200px;">\
+                          <button onclick="addInput(this)"> + </button>\
+                          <button onclick="removeInput(this)"> - </button>\
+                          <span class="d-none"> Datos no validos </span>\
+                          <br>'
+
+    parentDiv.insertBefore(newDiv, thisDiv.nextSibling)
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function removeInput(elem){
+    var inputs = document.getElementsByClassName("divInput")
+    if ( inputs.length > 1 ) {
+      var thisDiv = elem.parentNode
+      thisDiv.parentNode.removeChild(thisDiv); 
+    }
+  }
+
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function runProgram(){
+
+    document.getElementById("salidas").classList.add("d-none")
+    document.getElementById("salidaMetodo1").classList.add("d-none")
+    document.getElementById("salidaMetodo2").classList.add("d-none")
+
+    var inputs = document.getElementsByClassName("input")
+    var ejecutar = true
+    var datos = []
+    var startLetter = "a"
+    var startDicc = []
+
+    for( var i = 0; i < inputs.length; i++){
+      var value = inputs[i].value
+      var message = inputs[i].parentNode.children[3]
+      message.classList.add("d-none")
+
+      if ( value == "" ) {
+        message.classList.remove("d-none")
+        ejecutar = false
+      }else{
+
+        try{
+          value = new Fraction( value )
+        }catch(e){
+          value = -1
+        }
+        
+        if ( value <= 0 || value >= 1) {
+          message.classList.remove("d-none")
+          ejecutar = false
+        }else{
+          datos.push( value )
+          startDicc.push( startLetter )
+          startLetter = String.fromCharCode( startLetter.charCodeAt() + 1 )
+        }
+      }
+    }
+
+    // datos = [ new Fraction("0.25"), new Fraction("0.20"), new Fraction("0.15"), new Fraction("0.15"), new Fraction("0.15"), new Fraction("0.1")]
+    // startDicc = ["a", "b", "c", "d", "e", "f"]
+
+    var sum = new Fraction(0)
+    for( var i = 0; i < datos.length; i++){
+      sum = sum.add( datos[i] )
+    }
+    
+    if( sum != 1 ) {
+      document.getElementById("limit1").classList.remove("d-none")
+      ejecutar = false
+    }else{
+      document.getElementById("limit1").classList.add("d-none")
+    }
+
+    if ( ejecutar ) {
+      var texto = document.getElementById('diccionario').value.toLowerCase().split("")
+      // texto = "dbea".split("")
+
+      var textEjecutar = true
+      if ( texto.length == 0 ) {
+        textEjecutar = false
+      }
+      
+      for( var i = 0; i < texto.length; i++){
+        if ( !startDicc.includes( texto[i] ) ) {
+          textEjecutar = false
+        }
+      }
+
+      if ( textEjecutar ) {
+        document.getElementById("limitLetter").classList.add("d-none")
+        document.getElementById("salidas").classList.remove("d-none")
+        resolveT(datos, texto, startDicc )
+      }else{
+        document.getElementById("limitLetter").classList.remove("d-none")
+      }
+      
+    }
+
+  }
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function resolveT(data, text, diccionario){
+
+    var diccLeters = {}
+    var startLetter = "a"
+    var printDicc = []
+    for( var i = 0; i < data.length; i++){
+      diccLeters[ startLetter ] = data[i]
+      printDicc.push( [ startLetter, data[i].toString()])
+      startLetter = String.fromCharCode( startLetter.charCodeAt() + 1 )
+    }
+    printTable( printDicc, "datosEntrada" )
+    var lambda = diccLeters[ text[0] ]
+
+    var inicioAlpha = new Fraction(0)
+    for( var i = 0; i < diccionario.length; i++){
+      inicioAlpha = inicioAlpha.add( diccLeters[ diccionario[i] ] )
+      if ( diccionario[i] == text[0] ) {
+        break
+      }
+    }
+
+    var alpha = new Fraction(0)
+    var beta = new Fraction(0)
+    
+    var startAlphaValues = [ inicioAlpha ] 
+    var startAlphaLetters = [ text[0] ] 
+    var tableAlpha = []
+
+
+    for( var i = 1; i < text.length; i++){
+      lambda = lambda.mul( diccLeters[ text[i] ] )
+
+      var prevAlpha = new Fraction(0)
+      var auxMulLambda = new Fraction(1)
+      for( var j = 0; j < startAlphaLetters.length; j++){
+        auxMulLambda = auxMulLambda.mul( diccLeters[ startAlphaLetters[j] ] )
+      }
+
+      for( var j = 0; j < diccionario.length; j++){
+
+        var auxMulLambdaFinal = auxMulLambda.mul( diccLeters[ diccionario[j] ] )
+
+        tableAlpha.push([
+          startAlphaLetters.join("") + diccionario[j],
+          auxMulLambdaFinal.toString(),
+          prevAlpha.toString(),
+          auxMulLambdaFinal.add( prevAlpha ).toString(),
+        ])
+
+        if ( diccionario[j] == text[i] ) {
+          if ( prevAlpha == 0 ) {
+            prevAlpha = auxMulLambdaFinal.add( prevAlpha )
+          }
+          break
+        }
+
+        prevAlpha = auxMulLambdaFinal.add( prevAlpha )
+        
+      }
+
+      tableAlpha.push(["----", "----", "----", "----", ])
+
+      startAlphaLetters.push( text[i] )
+      startAlphaValues.push( prevAlpha )
+    }
+    tableAlpha.pop()
+
+    printTable( tableAlpha, "tableAlpha" )
+    // printData( startAlphaValues.map(function(x){ return x }).join("-"), "startAlphaValues" )
+
+    for( var i = 0; i < startAlphaValues.length; i++){
+      alpha = alpha.add( startAlphaValues[i] )
+    }
+
+    beta = lambda.add(alpha)
+
+    printData( lambda.toString(), "lambda")
+    printData( alpha.toString(), "alpha")
+    printData( beta.toString(), "beta")
+
+    if ( document.getElementById("metodo1").checked ) {
+      document.getElementById("salidaMetodo1").classList.remove("d-none")
+      var rota = new Fraction(2)
+      while( new Fraction(1).div( rota ) > lambda ){
+        rota = rota.mul( 2 )
+      }
+
+      var lambdaAlpha = rota.mul( alpha )
+      var lambdaBeta = rota.mul( beta )
+
+      printData( rota.toString(), "rota")
+      printData( lambdaAlpha.toString(), "lambdaAlpha")
+      printData( lambdaBeta.toString(), "lambdaBeta")
+
+      lambdaAlpha = lambdaAlpha.ceil()
+      lambdaBeta = lambdaBeta.floor()
+
+      var parMasMenor = lambdaAlpha
+      var list = [];
+      for (var i = parseInt( lambdaAlpha.toString() ); i <= parseInt( lambdaBeta.toString() ); i++) {
+
+        if( i % 2 == 0 ){
+          parMasMenor = new Fraction( i )
+          break
+        }
+      }
+
+      var simplificadoX = new Fraction( parMasMenor.toString() + "/" + rota.toString() )
+
+      printData(parMasMenor.toString(), "x")
+      printData(simplificadoX.toFraction(), "simplificadoX")
+
+      var numBin = simplificadoX.n * 2
+      var denBin = simplificadoX.d
+      var historialNum = []
+      var binarioR = []
+      var erre = []
+      while( true ){
+
+        if( historialNum.includes( numBin ) ){
+          break
+        }
+
+        historialNum.push( numBin )
+        binarioR.push([ numBin + "/" + denBin, numBin >= denBin ? 1 : 0 ])
+
+        if(numBin >= denBin){
+          numBin = numBin % denBin
+          erre.push(1)
+        }else{
+          erre.push(0)
+        }
+
+        numBin = numBin * 2
+      }
+
+      printTable(binarioR ,"tableBinario1") 
+      printData("0." + erre.join(""), "R")
+      
+    }else{
+      document.getElementById("salidaMetodo2").classList.remove("d-none")
+      var binarioA = []
+      var binarioB = []
+      var startA = alpha.mul( new Fraction( 2 ) )
+      var startB = beta.mul( new Fraction( 2 ) )
+      var rAlpha = []
+      var rBeta = []
+
+      while(true){
+        var resA = startA >= 1 ? 1 : 0
+        var resB = startB >= 1 ? 1 : 0
+
+        binarioA.push( [startA.toString(), resA] )
+        binarioB.push( [startB.toString(), resB] )
+
+        if ( resA == resB ) {
+          rAlpha.push( resA )
+          rBeta.push( resB )
+
+          if (startA >= 1){
+            startA = startA.sub( new Fraction(1) )
+          }
+          startA = startA.mul( new Fraction(2) )  
+          
+              
+          if( startB >= 1 ){
+            startB = startB.sub( new Fraction(1) )  
+          }
+          startB = startB.mul( new Fraction(2) )  
+          
+
+        }else{
+          break
+        }
+      }
+
+      printTable(binarioA, "binarioA")
+      printTable(binarioB, "binarioB")
+      printData(rAlpha.join(""), "rAlpha")
+      printData(rBeta.join(""), "rBeta")
+
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function printTable( array, id ){
+    var table = document.getElementById(id)
+    table.innerHTML = ""
+    for( var i = 0; i < array.length; i++){
+      var row = table.insertRow(i)
+      for( var j = 0; j < array[i].length; j++){
+        var cell = row.insertCell(j)
+        cell.innerHTML = array[i][j]
+      }
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  function printData( value, id ){
+    document.getElementById(id).innerHTML = value
+  }
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
